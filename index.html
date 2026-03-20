@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Periodic Table Flashcards</title>
+  <link rel="stylesheet" href="styles.css" />
+  <!-- Google Fonts: display + body pairing -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Space+Mono:ital,wght@0,400;0,700;1,400&family=Unbounded:wght@400;700;900&display=swap" rel="stylesheet" />
+</head>
+<body>
+
+<!-- ══════════════════════════════════════════════════════════
+     BACKGROUND GRID DECORATION
+══════════════════════════════════════════════════════════ -->
+<div class="bg-grid" aria-hidden="true"></div>
+<div class="bg-orb bg-orb--1" aria-hidden="true"></div>
+<div class="bg-orb bg-orb--2" aria-hidden="true"></div>
+
+<!-- ══════════════════════════════════════════════════════════
+     HEADER
+══════════════════════════════════════════════════════════ -->
+<header class="site-header">
+  <div class="header-inner">
+    <div class="header-title">
+      <span class="header-symbol">⚛</span>
+      <h1>Periodic Flashcards</h1>
+    </div>
+    <div class="header-progress">
+      <div class="progress-track">
+        <div class="progress-bar" id="progress-bar"></div>
+      </div>
+      <div class="progress-labels">
+        <span id="progress-text">0 / 0 mastered</span>
+        <span id="deck-remaining">0 remaining</span>
+      </div>
+    </div>
+  </div>
+</header>
+
+<!-- ══════════════════════════════════════════════════════════
+     MAIN LAYOUT
+══════════════════════════════════════════════════════════ -->
+<main class="main-layout">
+
+  <!-- ── SIDEBAR ────────────────────────────────────────── -->
+  <aside class="sidebar">
+
+    <!-- Quiz Mode -->
+    <section class="sidebar-section">
+      <h2 class="sidebar-heading">Quiz Mode</h2>
+      <select id="quiz-mode-select" class="styled-select" aria-label="Choose quiz mode"></select>
+    </section>
+
+    <!-- Filter Mode -->
+    <section class="sidebar-section">
+      <h2 class="sidebar-heading">Study Set</h2>
+      <select id="filter-mode-select" class="styled-select" aria-label="Choose filter mode"></select>
+    </section>
+
+    <!-- Dynamic Filter Panels -->
+    <section class="sidebar-section filter-panels">
+
+      <!-- Custom Selection Panel -->
+      <div id="custom-panel" class="filter-panel" hidden></div>
+
+      <!-- Group Panel -->
+      <div id="group-panel" class="filter-panel" hidden></div>
+
+      <!-- Period Panel -->
+      <div id="period-panel" class="filter-panel" hidden></div>
+
+      <!-- Element Type Panel -->
+      <div id="type-panel" class="filter-panel" hidden></div>
+
+    </section>
+
+    <!-- Apply + Reset -->
+    <div class="sidebar-actions">
+      <button id="apply-filters-btn" class="action-btn action-btn--primary">
+        Apply &amp; Start
+      </button>
+      <button id="reset-btn" class="action-btn action-btn--ghost">
+        ↺ Reset Round
+      </button>
+    </div>
+
+    <!-- Legend -->
+    <section class="sidebar-section legend">
+      <h2 class="sidebar-heading">Element Types</h2>
+      <ul class="legend-list" id="legend-list">
+        <li><span class="swatch" data-type="alkali-metal"></span>Alkali Metal</li>
+        <li><span class="swatch" data-type="alkaline-earth"></span>Alkaline Earth</li>
+        <li><span class="swatch" data-type="transition-metal"></span>Transition Metal</li>
+        <li><span class="swatch" data-type="post-transition"></span>Post-Transition</li>
+        <li><span class="swatch" data-type="metalloid"></span>Metalloid</li>
+        <li><span class="swatch" data-type="nonmetal"></span>Nonmetal</li>
+        <li><span class="swatch" data-type="halogen"></span>Halogen</li>
+        <li><span class="swatch" data-type="noble-gas"></span>Noble Gas</li>
+        <li><span class="swatch" data-type="lanthanide"></span>Lanthanide</li>
+        <li><span class="swatch" data-type="actinide"></span>Actinide</li>
+      </ul>
+    </section>
+
+  </aside>
+
+  <!-- ── CARD AREA ──────────────────────────────────────── -->
+  <section class="card-column">
+
+    <!-- Active Card Area -->
+    <div id="card-area">
+
+      <div id="flashcard" class="flashcard" role="region" aria-label="Flashcard">
+        <div class="flashcard-inner">
+
+          <!-- Decorative atomic number badge -->
+          <span class="atomic-badge" id="atomic-badge"></span>
+
+          <!-- Quiz label -->
+          <p class="quiz-label" id="quiz-label">Identify this element</p>
+
+          <!-- Prompt (front of card) -->
+          <div class="card-prompt" id="card-prompt"></div>
+
+          <!-- Divider -->
+          <div class="card-divider"></div>
+
+          <!-- Answer (revealed on flip) -->
+          <div class="card-answer" id="card-answer" hidden></div>
+
+          <!-- Hint -->
+          <p class="card-hint" id="card-hint" hidden></p>
+
+          <!-- Full meta info -->
+          <p class="card-meta" id="card-meta" hidden></p>
+
+        </div>
+      </div>
+
+      <!-- Input + Controls -->
+      <div class="card-controls">
+        <input
+          type="text"
+          id="answer-input"
+          class="answer-input"
+          placeholder="Type your answer…"
+          autocomplete="off"
+          spellcheck="false"
+          aria-label="Your answer"
+        />
+        <div class="control-btns">
+          <button id="flip-btn" class="action-btn action-btn--primary action-btn--large">
+            Reveal Answer
+          </button>
+          <button id="next-btn" class="action-btn action-btn--ghost action-btn--large" hidden>
+            Next Card →
+          </button>
+        </div>
+        <p class="keyboard-hint">Press <kbd>Enter</kbd> or <kbd>Space</kbd> to reveal · <kbd>Enter</kbd> again for next</p>
+      </div>
+
+    </div>
+
+    <!-- Completion Screen -->
+    <div id="completion-screen" class="completion-screen" hidden>
+      <div class="completion-inner">
+        <div class="completion-icon">🎉</div>
+        <h2 class="completion-title">Round Complete!</h2>
+        <p class="completion-score" id="completion-score"></p>
+        <button id="restart-btn" class="action-btn action-btn--primary action-btn--large">
+          Start New Round
+        </button>
+      </div>
+    </div>
+
+    <!-- Empty State -->
+    <div id="empty-state" class="empty-state" hidden>
+      <div class="empty-inner">
+        <div class="empty-icon">⚗</div>
+        <p id="empty-msg">No elements selected.</p>
+        <p class="empty-sub">Adjust your filters in the sidebar and click <strong>Apply &amp; Start</strong>.</p>
+      </div>
+    </div>
+
+  </section>
+
+</main>
+
+<!-- ══════════════════════════════════════════════════════════
+     FOOTER
+══════════════════════════════════════════════════════════ -->
+<footer class="site-footer">
+  <span>Periodic Table Flashcards · All 118 Elements</span>
+  <span>See <code>DEVELOPER_GUIDE.md</code> to extend this program</span>
+</footer>
+
+<script type="module" src="app.js"></script>
+</body>
+</html>
