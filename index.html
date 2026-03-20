@@ -3,199 +3,407 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Periodic Table Flashcards</title>
-  <link rel="stylesheet" href="styles.css" />
-  <!-- Google Fonts: display + body pairing -->
+  <title>Flashcard Studio</title>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Space+Mono:ital,wght@0,400;0,700;1,400&family=Unbounded:wght@400;700;900&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=DM+Mono:wght@300;400;500&display=swap" rel="stylesheet" />
+  <style>
+    /* ── Tokens ─────────────────────────────────────────── */
+    :root {
+      --bg:        #f5f2eb;
+      --bg-card:   #faf8f4;
+      --ink:       #1a1814;
+      --ink-mid:   #5a554a;
+      --ink-faint: #b0aa9e;
+      --rule:      #ddd9d0;
+
+      --accent-periodic:  #1a3a2a;
+      --accent-p-light:   #e8f0eb;
+      --accent-p-glow:    rgba(26,58,42,0.12);
+
+      --accent-future1:   #1a1f3a;
+      --accent-f1-light:  #e8eaf5;
+
+      --accent-future2:   #3a1a2a;
+      --accent-f2-light:  #f5e8f0;
+
+      --accent-future3:   #3a2a1a;
+      --accent-f3-light:  #f5f0e8;
+
+      --font-serif: "Instrument Serif", Georgia, serif;
+      --font-mono:  "DM Mono", monospace;
+      --radius:     16px;
+    }
+
+    /* ── Reset ──────────────────────────────────────────── */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html { font-size: 16px; }
+
+    body {
+      font-family: var(--font-mono);
+      background: var(--bg);
+      color: var(--ink);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* ── Texture overlay ────────────────────────────────── */
+    body::before {
+      content: "";
+      position: fixed;
+      inset: 0;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='200'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='200' height='200' filter='url(%23n)' opacity='0.03'/%3E%3C/svg%3E");
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    /* ── Header ─────────────────────────────────────────── */
+    header {
+      position: relative;
+      z-index: 1;
+      padding: 4rem 3rem 2.5rem;
+      border-bottom: 1px solid var(--rule);
+      max-width: 1200px;
+      margin: 0 auto;
+      width: 100%;
+    }
+
+    .header-eyebrow {
+      font-size: 0.65rem;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      color: var(--ink-faint);
+      margin-bottom: 0.75rem;
+      font-weight: 400;
+    }
+
+    h1 {
+      font-family: var(--font-serif);
+      font-size: clamp(2.8rem, 6vw, 4.5rem);
+      font-weight: 400;
+      line-height: 1.05;
+      color: var(--ink);
+      letter-spacing: -0.02em;
+    }
+
+    h1 em {
+      font-style: italic;
+      color: var(--ink-mid);
+    }
+
+    .header-sub {
+      margin-top: 1rem;
+      font-size: 0.8rem;
+      color: var(--ink-mid);
+      font-weight: 300;
+      max-width: 480px;
+      line-height: 1.7;
+    }
+
+    /* ── Main ───────────────────────────────────────────── */
+    main {
+      flex: 1;
+      position: relative;
+      z-index: 1;
+      max-width: 1200px;
+      margin: 0 auto;
+      width: 100%;
+      padding: 3rem 3rem 4rem;
+    }
+
+    .section-label {
+      font-size: 0.62rem;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      color: var(--ink-faint);
+      margin-bottom: 1.5rem;
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+    }
+
+    .section-label::after {
+      content: "";
+      flex: 1;
+      height: 1px;
+      background: var(--rule);
+    }
+
+    /* ── Card Grid ──────────────────────────────────────── */
+    .card-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+      gap: 1.25rem;
+    }
+
+    /* ── Program Card ───────────────────────────────────── */
+    .program-card {
+      display: block;
+      text-decoration: none;
+      background: var(--bg-card);
+      border: 1px solid var(--rule);
+      border-radius: var(--radius);
+      padding: 1.75rem;
+      position: relative;
+      overflow: hidden;
+      cursor: pointer;
+      transition:
+        transform 0.22s cubic-bezier(0.34, 1.4, 0.64, 1),
+        box-shadow 0.22s ease,
+        border-color 0.2s ease;
+      animation: cardReveal 0.5s ease both;
+    }
+
+    .program-card:nth-child(1) { animation-delay: 0.05s; }
+    .program-card:nth-child(2) { animation-delay: 0.12s; }
+    .program-card:nth-child(3) { animation-delay: 0.19s; }
+    .program-card:nth-child(4) { animation-delay: 0.26s; }
+    .program-card:nth-child(5) { animation-delay: 0.33s; }
+    .program-card:nth-child(6) { animation-delay: 0.40s; }
+
+    @keyframes cardReveal {
+      from { opacity: 0; transform: translateY(16px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    .program-card:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 16px 48px -8px rgba(0,0,0,0.12);
+    }
+
+    /* Accent bar at top */
+    .program-card::before {
+      content: "";
+      position: absolute;
+      top: 0; left: 0; right: 0;
+      height: 3px;
+      background: var(--card-accent, var(--ink));
+      border-radius: var(--radius) var(--radius) 0 0;
+      opacity: 0.7;
+      transition: opacity 0.2s;
+    }
+    .program-card:hover::before { opacity: 1; }
+
+    /* Subtle corner glow on hover */
+    .program-card::after {
+      content: "";
+      position: absolute;
+      inset: 0;
+      border-radius: var(--radius);
+      background: radial-gradient(circle at 20% 20%, var(--card-glow, transparent) 0%, transparent 60%);
+      opacity: 0;
+      transition: opacity 0.3s;
+      pointer-events: none;
+    }
+    .program-card:hover::after { opacity: 1; }
+
+    /* Card colors */
+    .program-card--periodic {
+      --card-accent: var(--accent-periodic);
+      --card-glow:   var(--accent-p-glow);
+    }
+    .program-card--periodic:hover { border-color: #b0c8b8; }
+
+    .program-card--future1 {
+      --card-accent: var(--accent-future1);
+      --card-glow:   rgba(26,31,58,0.08);
+    }
+    .program-card--future2 {
+      --card-accent: var(--accent-future2);
+      --card-glow:   rgba(58,26,42,0.08);
+    }
+    .program-card--future3 {
+      --card-accent: var(--accent-future3);
+      --card-glow:   rgba(58,42,26,0.08);
+    }
+
+    /* Card icon */
+    .card-icon {
+      font-size: 2rem;
+      margin-bottom: 1rem;
+      display: block;
+      line-height: 1;
+    }
+
+    /* Card subject tag */
+    .card-subject {
+      font-size: 0.6rem;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      color: var(--ink-faint);
+      margin-bottom: 0.4rem;
+      font-weight: 500;
+    }
+
+    /* Card title */
+    .card-title {
+      font-family: var(--font-serif);
+      font-size: 1.45rem;
+      font-weight: 400;
+      color: var(--ink);
+      line-height: 1.2;
+      margin-bottom: 0.6rem;
+      letter-spacing: -0.01em;
+    }
+
+    /* Card description */
+    .card-desc {
+      font-size: 0.72rem;
+      color: var(--ink-mid);
+      line-height: 1.65;
+      font-weight: 300;
+      margin-bottom: 1.25rem;
+    }
+
+    /* Card footer */
+    .card-footer {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding-top: 1rem;
+      border-top: 1px solid var(--rule);
+    }
+
+    .card-count {
+      font-size: 0.65rem;
+      color: var(--ink-faint);
+      font-weight: 400;
+    }
+
+    .card-arrow {
+      font-size: 0.75rem;
+      color: var(--ink-mid);
+      transition: transform 0.2s cubic-bezier(0.34, 1.4, 0.64, 1);
+    }
+    .program-card:hover .card-arrow { transform: translateX(4px); }
+
+    /* ── Coming Soon Card ───────────────────────────────── */
+    .program-card--soon {
+      opacity: 0.5;
+      cursor: default;
+      pointer-events: none;
+    }
+    .program-card--soon::before { opacity: 0.3; }
+    .soon-badge {
+      display: inline-block;
+      font-size: 0.58rem;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      background: var(--rule);
+      color: var(--ink-mid);
+      padding: 2px 8px;
+      border-radius: 99px;
+      margin-left: 0.5rem;
+      vertical-align: middle;
+    }
+
+    /* ── Footer ─────────────────────────────────────────── */
+    footer {
+      position: relative;
+      z-index: 1;
+      border-top: 1px solid var(--rule);
+      padding: 1.5rem 3rem;
+      max-width: 1200px;
+      margin: 0 auto;
+      width: 100%;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 0.65rem;
+      color: var(--ink-faint);
+      font-weight: 300;
+    }
+
+    /* ── Responsive ─────────────────────────────────────── */
+    @media (max-width: 700px) {
+      header, main, footer { padding-left: 1.5rem; padding-right: 1.5rem; }
+      header { padding-top: 2.5rem; }
+      .card-grid { grid-template-columns: 1fr; }
+    }
+  </style>
 </head>
 <body>
 
-<!-- ══════════════════════════════════════════════════════════
-     BACKGROUND GRID DECORATION
-══════════════════════════════════════════════════════════ -->
-<div class="bg-grid" aria-hidden="true"></div>
-<div class="bg-orb bg-orb--1" aria-hidden="true"></div>
-<div class="bg-orb bg-orb--2" aria-hidden="true"></div>
+  <header>
+    <p class="header-eyebrow">Study Tools</p>
+    <h1>Flashcard <em>Studio</em></h1>
+    <p class="header-sub">
+      A collection of interactive flashcard programs for science, language, and beyond.
+      Choose a subject below to begin studying.
+    </p>
+  </header>
 
-<!-- ══════════════════════════════════════════════════════════
-     HEADER
-══════════════════════════════════════════════════════════ -->
-<header class="site-header">
-  <div class="header-inner">
-    <div class="header-title">
-      <span class="header-symbol">⚛</span>
-      <h1>Periodic Flashcards</h1>
-    </div>
-    <div class="header-progress">
-      <div class="progress-track">
-        <div class="progress-bar" id="progress-bar"></div>
-      </div>
-      <div class="progress-labels">
-        <span id="progress-text">0 / 0 mastered</span>
-        <span id="deck-remaining">0 remaining</span>
-      </div>
-    </div>
-  </div>
-</header>
+  <main>
+    <p class="section-label">Available Programs</p>
 
-<!-- ══════════════════════════════════════════════════════════
-     MAIN LAYOUT
-══════════════════════════════════════════════════════════ -->
-<main class="main-layout">
+    <div class="card-grid">
 
-  <!-- ── SIDEBAR ────────────────────────────────────────── -->
-  <aside class="sidebar">
+      <!-- ── Periodic Table ── -->
+      <a class="program-card program-card--periodic" href="periodic-table/index.html">
+        <span class="card-icon">⚛</span>
+        <p class="card-subject">Chemistry</p>
+        <h2 class="card-title">Periodic Table</h2>
+        <p class="card-desc">
+          Study all 118 elements by symbol, name, atomic number, or atomic mass.
+          Filter by group, period, or element type.
+        </p>
+        <div class="card-footer">
+          <span class="card-count">118 elements · 6 quiz modes</span>
+          <span class="card-arrow">→</span>
+        </div>
+      </a>
 
-    <!-- Quiz Mode -->
-    <section class="sidebar-section">
-      <h2 class="sidebar-heading">Quiz Mode</h2>
-      <select id="quiz-mode-select" class="styled-select" aria-label="Choose quiz mode"></select>
-    </section>
+      <!-- ── Placeholder: Coming Soon ── -->
+      <!-- To add a new program: copy one of the blocks below, remove the
+           program-card--soon class, set the href, and fill in the content. -->
 
-    <!-- Filter Mode -->
-    <section class="sidebar-section">
-      <h2 class="sidebar-heading">Study Set</h2>
-      <select id="filter-mode-select" class="styled-select" aria-label="Choose filter mode"></select>
-    </section>
-
-    <!-- Dynamic Filter Panels -->
-    <section class="sidebar-section filter-panels">
-
-      <!-- Custom Selection Panel -->
-      <div id="custom-panel" class="filter-panel" hidden></div>
-
-      <!-- Group Panel -->
-      <div id="group-panel" class="filter-panel" hidden></div>
-
-      <!-- Period Panel -->
-      <div id="period-panel" class="filter-panel" hidden></div>
-
-      <!-- Element Type Panel -->
-      <div id="type-panel" class="filter-panel" hidden></div>
-
-    </section>
-
-    <!-- Apply + Reset -->
-    <div class="sidebar-actions">
-      <button id="apply-filters-btn" class="action-btn action-btn--primary">
-        Apply &amp; Start
-      </button>
-      <button id="reset-btn" class="action-btn action-btn--ghost">
-        ↺ Reset Round
-      </button>
-    </div>
-
-    <!-- Legend -->
-    <section class="sidebar-section legend">
-      <h2 class="sidebar-heading">Element Types</h2>
-      <ul class="legend-list" id="legend-list">
-        <li><span class="swatch" data-type="alkali-metal"></span>Alkali Metal</li>
-        <li><span class="swatch" data-type="alkaline-earth"></span>Alkaline Earth</li>
-        <li><span class="swatch" data-type="transition-metal"></span>Transition Metal</li>
-        <li><span class="swatch" data-type="post-transition"></span>Post-Transition</li>
-        <li><span class="swatch" data-type="metalloid"></span>Metalloid</li>
-        <li><span class="swatch" data-type="nonmetal"></span>Nonmetal</li>
-        <li><span class="swatch" data-type="halogen"></span>Halogen</li>
-        <li><span class="swatch" data-type="noble-gas"></span>Noble Gas</li>
-        <li><span class="swatch" data-type="lanthanide"></span>Lanthanide</li>
-        <li><span class="swatch" data-type="actinide"></span>Actinide</li>
-      </ul>
-    </section>
-
-  </aside>
-
-  <!-- ── CARD AREA ──────────────────────────────────────── -->
-  <section class="card-column">
-
-    <!-- Active Card Area -->
-    <div id="card-area">
-
-      <div id="flashcard" class="flashcard" role="region" aria-label="Flashcard">
-        <div class="flashcard-inner">
-
-          <!-- Decorative atomic number badge -->
-          <span class="atomic-badge" id="atomic-badge"></span>
-
-          <!-- Quiz label -->
-          <p class="quiz-label" id="quiz-label">Identify this element</p>
-
-          <!-- Prompt (front of card) -->
-          <div class="card-prompt" id="card-prompt"></div>
-
-          <!-- Divider -->
-          <div class="card-divider"></div>
-
-          <!-- Answer (revealed on flip) -->
-          <div class="card-answer" id="card-answer" hidden></div>
-
-          <!-- Hint -->
-          <p class="card-hint" id="card-hint" hidden></p>
-
-          <!-- Full meta info -->
-          <p class="card-meta" id="card-meta" hidden></p>
-
+      <div class="program-card program-card--future1 program-card--soon">
+        <span class="card-icon">🧬</span>
+        <p class="card-subject">Biology <span class="soon-badge">Soon</span></p>
+        <h2 class="card-title">Human Anatomy</h2>
+        <p class="card-desc">
+          Bones, muscles, organs, and systems. Study the building blocks of the human body.
+        </p>
+        <div class="card-footer">
+          <span class="card-count">Coming soon</span>
+          <span class="card-arrow">→</span>
         </div>
       </div>
 
-      <!-- Input + Controls -->
-      <div class="card-controls">
-        <input
-          type="text"
-          id="answer-input"
-          class="answer-input"
-          placeholder="Type your answer…"
-          autocomplete="off"
-          spellcheck="false"
-          aria-label="Your answer"
-        />
-        <div class="control-btns">
-          <button id="flip-btn" class="action-btn action-btn--primary action-btn--large">
-            Reveal Answer
-          </button>
-          <button id="next-btn" class="action-btn action-btn--ghost action-btn--large" hidden>
-            Next Card →
-          </button>
+      <div class="program-card program-card--future2 program-card--soon">
+        <span class="card-icon">🌍</span>
+        <p class="card-subject">Geography <span class="soon-badge">Soon</span></p>
+        <h2 class="card-title">World Capitals</h2>
+        <p class="card-desc">
+          Every country and its capital city. Filter by continent or region.
+        </p>
+        <div class="card-footer">
+          <span class="card-count">Coming soon</span>
+          <span class="card-arrow">→</span>
         </div>
-        <p class="keyboard-hint">Press <kbd>Enter</kbd> or <kbd>Space</kbd> to reveal · <kbd>Enter</kbd> again for next</p>
+      </div>
+
+      <div class="program-card program-card--future3 program-card--soon">
+        <span class="card-icon">📐</span>
+        <p class="card-subject">Mathematics <span class="soon-badge">Soon</span></p>
+        <h2 class="card-title">Formulas &amp; Constants</h2>
+        <p class="card-desc">
+          Key formulas and physical constants across algebra, calculus, and physics.
+        </p>
+        <div class="card-footer">
+          <span class="card-count">Coming soon</span>
+          <span class="card-arrow">→</span>
+        </div>
       </div>
 
     </div>
+  </main>
 
-    <!-- Completion Screen -->
-    <div id="completion-screen" class="completion-screen" hidden>
-      <div class="completion-inner">
-        <div class="completion-icon">🎉</div>
-        <h2 class="completion-title">Round Complete!</h2>
-        <p class="completion-score" id="completion-score"></p>
-        <button id="restart-btn" class="action-btn action-btn--primary action-btn--large">
-          Start New Round
-        </button>
-      </div>
-    </div>
+  <footer>
+    <span>Flashcard Studio</span>
+    <span>Add programs by editing <code>index.html</code></span>
+  </footer>
 
-    <!-- Empty State -->
-    <div id="empty-state" class="empty-state" hidden>
-      <div class="empty-inner">
-        <div class="empty-icon">⚗</div>
-        <p id="empty-msg">No elements selected.</p>
-        <p class="empty-sub">Adjust your filters in the sidebar and click <strong>Apply &amp; Start</strong>.</p>
-      </div>
-    </div>
-
-  </section>
-
-</main>
-
-<!-- ══════════════════════════════════════════════════════════
-     FOOTER
-══════════════════════════════════════════════════════════ -->
-<footer class="site-footer">
-  <span>Periodic Table Flashcards · All 118 Elements</span>
-  <span>See <code>DEVELOPER_GUIDE.md</code> to extend this program</span>
-</footer>
-
-<script type="module" src="app.js"></script>
 </body>
 </html>
